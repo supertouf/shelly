@@ -1,3 +1,23 @@
+function interpretSIAEventCode(code) {
+  if (!code) return "Code inconnu";
+
+  var label = "";
+
+  if (code === "RP" || code === "OP") label = "📴 Désactivé";
+  else if (code === "CL") label = "🔐 Activé total";
+  else if (code === "NL") label = "🌙 Mode nuit";
+  else if (code === "TA") label = "📡 Test automatique";
+  else if (code === "TR") label = "✅ Test rétabli";
+  else if (code === "YG") label = "🚨 Sabotage détecté";
+  else if (code === "MA") label = "⚡❌ Alimentation coupée";
+  else if (code === "WA") label = "🔋❗ Batterie faible";
+  else if (code === "BA") label = "🚨🔔 Alarme déclenchée";
+  else label = "❓ Code inconnu : " + code;
+
+  return label;
+}
+
+
 function getSIAEvent() {
   Shelly.call("HTTP.REQUEST", {
     method: "GET",
@@ -8,12 +28,13 @@ function getSIAEvent() {
       print("✅ Dernier event SIA:");
       let eventData = data["sia/events"];
 
-      if (eventData.event_type) {
-         print("Status event_type", eventData.event_type);
-        Virtual.getHandle("text:200").setValue(eventData.event_type);
+      if (eventData && eventData.code) {
+        var interpreted = interpretSIAEventCode(eventData.code);
+        print("🔔 Interprétation code :", interpreted);
+        Virtual.getHandle("text:200").setValue(interpreted);
       } else {
-       Virtual.getHandle("text:200").setValue("Aucun yiki event");
-       }
+        Virtual.getHandle("text:200").setValue("Aucun événement");
+      }
       if (eventData.alarm_triggered == true) {
         print("Status alarm_triggered", eventData.alarm_triggered);
         Virtual.getHandle("boolean:200").setValue(true);
